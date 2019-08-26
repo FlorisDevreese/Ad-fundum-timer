@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8 />
+    <title>Ad Fundum</title>
+    <style>
+        .stopwatch {
+            display: inline-block;
+            background-color: white;
+            border: 1px solid #eee;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        .stopwatch span {
+            font-weight: bold;
+            display: block;
+        }
+
+        .stopwatch a {
+            padding-right: 5px;
+            text-decoration: none;
+        }
+
+        body {
+            background-color: #020202;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root">
+        <div id="left" style="float:left; width:70%; text-align:center; color:#F8F8FF;">
+            <div id="time" style="font-size:1000%;">
+                0.000
+            </div>
+            <div style="font-size:150%;">
+                <button id="StartStopbtn" onclick="allowStart()">START</button>
+                <input id="naam" type="text" placeholder="what's your name?" size="35">
+            </div>
+            <!-- <div id="videos-container"></div> -->
+            <video controls autoplay playinline></video>
+            <audio id="audio"></audio>
+        </div>
+        <div id="right" style="float:right; width:30%; font-size:300%; color:#F8F8FF;">
+        </div>
+    </div>
+
+    <script src="RecordRTC.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://www.webrtc-experiment.com/common.js"></script>
+    <script>
+        var running;
+        var counter;
+        var count = 0;
+        var startTime, interval = null, permissionToStart = false, times = [];
+        var nextId = 0;
+        var video = document.querySelector('video');
+        var recorder; // globally accessible
+
+        $(document).ready(function () {
+            running = false;
+            $(document).keydown(keydown);
+            $(document).keyup(keyup);
+            if (localStorage.times) {
+                times = JSON.parse(localStorage.times);
+                WriteTimes();
+            }
+            if (localStorage.nextId)
+                nextId = localStorage.nextId;
+            startCamera();
+        });
+
+        function captureCamera(callback) {
+            navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(function (camera) {
+                callback(camera);
+            }).catch(function (error) {
+                alert('Unable to capture your camera. Please check console logs.');
+                console.error(error);
+            });
+        }
+        function stopRecordingCallback() {
+            video.src = video.srcObject = null;
+            video.muted = false;
+            video.volume = 0;
+            video.loop = true;
+            var videoBlob = recorder.getBlob();
+            video.src = URL.createObjectURL(videoBlob);
+        }
+
+        function startCamera() {
+            captureCamera(function (camera) {
+                video.muted = true;
+                video.volume = 0;
+                video.srcObject = camera;
+                recorder = RecordRTC(camera, {
+                    type: 'video'
+                });
+
+                recorder.camera = camera;
+            });
+        };
+
+        function stopRecording() {
+            recorder.stopRecording(stopRecordingCallback);
+
+            // save video
+            // todo
+
+            setTimeout(allowNextOne, 3000);
+        };
+
+        function allowNextOne() {
+            $("#StartStopbtn").html("next");
+            $("#StartStopbtn").attr("disabled", false);
+        };
+
+        function keydown(evt) {
+            if (evt.keyCode == 48) {
+                if (running && interval) {
+                    stopTimer();
+                    running = false;
+                }
+            }
+        }
+
+        function keyup(evt) {
+            console.log("keyup: " + evt.keyCode)
+            if (permissionToStart && evt.keyCode == 48) {
+                startTimer();
+                running = true;
+            }
+        }
+
+        function allowStart() {
+            // show camera feed in video element
+            video.srcObject = recorder.camera
+
+            permissionToStart = true;
+            $("#time").html("0.000");
+            $("#StartStopbtn").attr("disabled", true);
+            $("#StartStopbtn").html("Begin maar!");
+        };
+
+        function startTimer() {
+            $("#StartStopbtn").html("ZUIPEN!");
+            startTime = Date.now();
+            interval = setInterval(update, 1);
+
+            // start recording the video stream
+            captureCamera(function (camera) {
+                video.muted = true;
+                video.volume = 0;
+                video.srcObject = camera;
+                recorder = RecordRTC(camera, {
+                    type: 'video'
+                });
+
+                recorder.startRecording();
+                recorder.camera = camera;
+            });
+        };
+
+        function stopTimer() {
+            clearInterval(interval);
+            interval = null;
+            permissionToStart = false;
+            $("#StartStopbtn").html("just a moment");
+            $("#StartStopbtn").attr("disabled", true);
+            store($("#naam").val(), $("#time").html());
+            setTimeout(stopRecording, 5000)
+        };
+
+        function update() {
+            var now = Date.now();
+            $("#time").html(((now - startTime) / 1000).toFixed(3));
+        };
+
+        function store(naam, time) {
+            var record = { "time": time, "naam": naam, "id": nextId };
+            nextId++;
+            localStorage.nextId = nextId;
+            times.push(record);
+            times.sort(function (a, b) { return a["time"] - b["time"] });
+            WriteTimes();
+        };
+
+        function WriteTimes() {
+            var Html = '<ol>\n';
+            for (var i = 0; i < times.length; i++) {
+                Html += '<li class="entry" id="entry_' + times[i]["id"] + '">' + times[i]["naam"] + '    ' + times[i]["time"] + 's' + '</li>\n';
+            }
+            Html += '</ol>\n';
+            $('#right').html(Html);
+
+            $("li.entry").hover(function () {
+                var id = $(this).attr('id');
+                id = id.split('_')[1];
+
+                $(this).append($('<button onclick="removeEntry(' + id + ')">remove</button>'));
+            }, function () {
+                $(this).find("button:last").remove();
+            });
+            setTimesInLocalStorage(times)
+        };
+
+        function removeEntry(id) {
+            var timesNew = [];
+            for (var i = 0; i < times.length; i++) {
+                if (times[i]["id"] != id)
+                    timesNew.push(times[i]);
+            }
+            times = timesNew;
+            WriteTimes();
+        }
+
+        function setTimesInLocalStorage(list) {
+            localStorage.times = JSON.stringify(list);
+        }
+    </script>
+</body>
+
+</html>
