@@ -24,7 +24,7 @@ Webpage that registers the time it took to do one ad-fundum drink. Also records 
 
 ## screenshot
 
-![Screenshot](docs/screenshot.jpg)
+![example](images/example.jpg)
 
 ## Good to know
 - (currently) only works in Firefox
