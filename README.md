@@ -31,9 +31,8 @@ Webpage that registers the time it took to do one ad-fundum drink. Also records 
     - tested in Firefox version 68.0.2 (64-bit)
 
 ## Todo 
-1. automatically save the recorded video to disk
-2. Fix bug that the timer doesn't start when the focus is still on the `StartStopbtn`
-3. make this also work in chromium based browsers
+1. Fix bug that the timer doesn't start when the focus is still on the `StartStopbtn`
+2. make this also work in chromium based browsers
 
 ## One more thing
 - Don't drink yourself stupid!

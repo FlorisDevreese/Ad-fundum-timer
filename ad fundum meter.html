@@ -87,6 +87,9 @@
             video.loop = true;
             var videoBlob = recorder.getBlob();
             video.src = URL.createObjectURL(videoBlob);
+            
+            // save the video
+            recorder.save('./video.webm');
         }
 
         function startCamera() {
@@ -105,8 +108,6 @@
         function stopRecording() {
             recorder.stopRecording(stopRecordingCallback);
 
-            // save video
-            // todo
 
             setTimeout(allowNextOne, 3000);
         };
