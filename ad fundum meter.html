@@ -51,6 +51,7 @@
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://www.webrtc-experiment.com/common.js"></script>
     <script>
+        var sensorKeyMapping = 104 // mapped the the "8" key on the numpad
         var running;
         var counter;
         var count = 0;
@@ -118,7 +119,7 @@
         };
 
         function keydown(evt) {
-            if (evt.keyCode == 48) {
+            if (evt.keyCode == sensorKeyMapping) {
                 if (running && interval) {
                     stopTimer();
                     running = false;
@@ -128,7 +129,7 @@
 
         function keyup(evt) {
             console.log("keyup: " + evt.keyCode)
-            if (permissionToStart && evt.keyCode == 48) {
+            if (permissionToStart && evt.keyCode == sensorKeyMapping) {
                 startTimer();
                 running = true;
             }
