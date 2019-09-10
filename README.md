@@ -5,7 +5,7 @@ Webpage that registers the time it took to do one ad-fundum drink. Also records 
 ### Hardware
 1. make a sensor that detects when an object (a drink) is above it.
 2. Connect the sensor tho a spare numpad (one that you can open to solder some wires)
-3. connect the sensor to the `8` key, so that the `8` key is pressed when the drink is above the sensor, and when the `8` key is not pressed when there is no key above it.
+3. connect the sensor to the `0` key, so that the `0` key is pressed when the drink is above the sensor, and when the `0` key is not pressed when there is no key above it.
 4. get a computer (laptop) with either an internal webcam, or a webcam attached to it.
 
 ### Software
